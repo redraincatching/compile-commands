@@ -1,5 +1,5 @@
-# `asha` compile-commands translation tool
-
-pretty sure this doesn't do the same thing as [bear](https://github.com/rizsotto/Bear)
+# `asha` - compile-commands translation tool
 
 [json compilation database specification](https://clang.llvm.org/docs/JSONCompilationDatabase.html)
+
+this is a work in progress, and will hopefully be a full release soon

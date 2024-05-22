@@ -3,21 +3,56 @@ use serde_json::{Value, json};
 use regex::Regex;
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
+use clap::Parser;
 
+/**
+* The structure of each command in the json file
+*
+* directory:
+*   - required
+*   - the working directory of the compilation
+*
+* file:
+*   - required
+*   - the translation unit source processed*
+*
+* command:
+*   - required if arguments not present
+*   - the compile command as a single shell-escaped string
+*
+* arguments:
+*   - required if command not present
+*   - the compile command argv as a list of strings, preferred to command
+*
+* output:
+*   - optional
+*   - the name of the output
+*/
 #[derive(Debug, Deserialize, Serialize)]
 struct JsonCommand {
     directory:  String,
-    command:    String,
+    command:    Option<String>,
+    arguments:  Option<Vec<String>>,
     file:       String,
-    output:     String
+    output:     Option<String>
+}
+
+#[derive(Parser)]
+struct Cli {
+    // location of compile_commands.json
+    #[arg(short, long)]
+    input:      std::path::PathBuf,
+
+    // destination of converted compile_commands.json
+    #[arg(short, long)]
+    output:     std::path::PathBuf
 }
 
 fn main() {
-    let args: Vec<String> = std::env::args().collect();
+    let args = Cli::parse();
 
-    // TODO: swap this out for the clap crate so i can actually use args, and throw in checking
-    let in_filepath   :&str = &args[1];
-    let out_filepath  :&str = &args[2];
+    let in_filepath     = &args.input;
+    let out_filepath    = &args.output;
 
     let file    = File::open(in_filepath).expect("couldn't open file");
     let reader  = BufReader::new(file);
@@ -30,10 +65,15 @@ fn main() {
     let processed_json: Vec<Value> = json_data
         .into_iter()
         .map(|data| {
+
+            // todo: replace these with functions
+            // replace C drive with mnt
             let directory = base.replace_all(&data.directory, "/mnt/c");
             let file = base.replace_all(&data.file, "/mnt/c");
-            let command = base.replace_all(&data.command, "/mnt/c");
+            let command = base.replace_all(data.command.unwrap().as_str(), "/mnt/c");
+            let args = base.replace_all(data.arguments.unwrap(), "/mnt/c");
 
+            // next change slashes
             json!({
                 "directory": directory,
                 "command": slashes.replace_all(&command, "/").to_string(),
