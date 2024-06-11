@@ -1,41 +1,11 @@
-use serde::{Deserialize, Serialize};
+mod types;
+
+use types::*;
 use serde_json::{Value, json};
 use regex::Regex;
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 use clap::Parser;
-
-/**
-* The structure of each command in the json file
-*
-* directory:
-*   - required
-*   - the working directory of the compilation
-*
-* file:
-*   - required
-*   - the translation unit source processed*
-*
-* command:
-*   - required if arguments not present
-*   - the compile command as a single shell-escaped string
-*
-* arguments:
-*   - required if command not present
-*   - the compile command argv as a list of strings, preferred to command
-*
-* output:
-*   - optional
-*   - the name of the output
-*/
-#[derive(Debug, Deserialize, Serialize)]
-struct JsonCommand {
-    directory:  String,
-    command:    Option<String>,
-    arguments:  Option<Vec<String>>,
-    file:       String,
-    output:     Option<String>
-}
 
 #[derive(Parser)]
 struct Cli {
@@ -71,7 +41,11 @@ fn main() {
             let directory = base.replace_all(&data.directory, "/mnt/c");
             let file = base.replace_all(&data.file, "/mnt/c");
             let command = base.replace_all(data.command.unwrap().as_str(), "/mnt/c");
-            let args = base.replace_all(data.arguments.unwrap(), "/mnt/c");
+            let vec = data.arguments;
+            let arguments = vec.unwrap()
+                                .into_iter()
+                                .map(|arg| {})
+            .replace_all(data.arguments.unwrap(), "/mnt/c");
 
             // next change slashes
             json!({
