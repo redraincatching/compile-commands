@@ -1,4 +1,4 @@
-# `asha` compile-commands translation tool
+# compile-commands translation tool
 
 pretty sure this doesn't do the same thing as [bear](https://github.com/rizsotto/Bear)
 
